@@ -25,18 +25,30 @@ if (!$ticket) {
     die("Das Ticket existiert nicht oder Sie haben keine Berechtigung darauf zuzugreifen.");
 }
 
-// Historie abrufen
-$history_stmt = $pdo->prepare("SELECT * FROM ticket_history WHERE ticket_id = ? ORDER BY created_at ASC");
+// Historie abrufen und Benutzernamen einbinden
+$history_stmt = $pdo->prepare("
+    SELECT th.*, u.username 
+    FROM ticket_history th 
+    JOIN users u ON th.changed_by = u.id 
+    WHERE th.ticket_id = ? 
+    ORDER BY th.created_at ASC
+");
 $history_stmt->execute([$ticket_id]);
 $history = $history_stmt->fetchAll();
 
 // Kommentare abrufen
-$comment_stmt = $pdo->prepare("SELECT c.comment, u.username, c.created_at FROM ticket_comments c JOIN users u ON c.user_id = u.id WHERE c.ticket_id = ? ORDER BY c.created_at ASC");
+$comment_stmt = $pdo->prepare("
+    SELECT c.comment, u.username, c.created_at 
+    FROM ticket_comments c 
+    JOIN users u ON c.user_id = u.id 
+    WHERE c.ticket_id = ? 
+    ORDER BY c.created_at ASC
+");
 $comment_stmt->execute([$ticket_id]);
 $comments = $comment_stmt->fetchAll();
 
 // Benutzer für die Zuweisung und Ersteller-Änderung abrufen (Admin sieht alle Benutzer)
-$users_stmt = $pdo->prepare("SELECT id, username, role FROM users"); // Entferne 'email' falls nicht benötigt
+$users_stmt = $pdo->prepare("SELECT id, username, role FROM users");
 $users_stmt->execute();
 $users = $users_stmt->fetchAll();
 
@@ -115,7 +127,7 @@ include 'includes/header.php';
             <option value="" disabled selected>Bitte wählen Sie einen Benutzer</option>
             <?php foreach ($users as $user): ?>
                 <option value="<?php echo $user['id']; ?>">
-                    <?php echo htmlspecialchars($user['username']); ?>
+                    <?php echo htmlspecialchars($user['username']) . ' - Rolle: ' . htmlspecialchars($user['role']); ?>
                 </option>
             <?php endforeach; ?>
         </select>
@@ -152,14 +164,22 @@ include 'includes/header.php';
     <h3>Historie</h3>
     <ul class="history">
         <?php foreach ($history as $entry): ?>
-            <li><strong><?php echo $entry['created_at']; ?>:</strong> <?php echo htmlspecialchars($entry['action']); ?> (von Benutzer-ID <?php echo $entry['changed_by']; ?>)</li>
+            <li>
+                <strong><?php echo date('d.m.Y', strtotime($entry['created_at'])); ?>, <?php echo date('H:i', strtotime($entry['created_at'])); ?> Uhr:</strong> 
+                <?php echo htmlspecialchars($entry['action']); ?> (von <?php echo htmlspecialchars($entry['username']); ?>)
+            </li>
         <?php endforeach; ?>
     </ul>
 
     <h3>Kommentare</h3>
     <ul class="comments">
         <?php foreach ($comments as $comment): ?>
-            <li><strong><?php echo htmlspecialchars($comment['username']); ?>:</strong> <?php echo htmlspecialchars($comment['comment']); ?> (<?php echo $comment['created_at']; ?>)</li>
+            <li>
+                <?php echo date('d.m.Y H:i', strtotime($comment['created_at'])); ?>Uhr
+                <?php echo htmlspecialchars($comment['username']); ?>:
+                <strong><?php echo htmlspecialchars($comment['comment']); ?> </strong> <!-- Kommentar-Inhalt -->
+                
+            </li>
         <?php endforeach; ?>
     </ul>
 
@@ -168,7 +188,7 @@ include 'includes/header.php';
         <h3>Kommentar hinzufügen</h3>
         <form action="ticket.php?id=<?php echo $ticket_id; ?>" method="POST">
             <textarea name="comment" required></textarea>
-            <button type="submit" name="comment">Kommentar hinzufügen</button>
+            <button type="submit" name="comment_submit">Kommentar hinzufügen</button>
         </form>
     <?php endif; ?>
 </div>

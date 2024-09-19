@@ -2,23 +2,29 @@
 require 'sessions/session.php';
 require 'config/db.php';
 
-// Benutzer-ID aus der Session holen
+// Benutzer-ID und Rolle aus der Session holen
 $user_id = $_SESSION['user_id'];
+$user_role = $_SESSION['role'];
 
-// Abfrage: Gesamtanzahl der Tickets des angemeldeten Benutzers
-$stmt_total = $pdo->prepare("SELECT COUNT(*) AS total FROM tickets WHERE user_id = ?");
-$stmt_total->execute([$user_id]);
-$total_tickets = $stmt_total->fetchColumn();
+// Admin-Übersicht: Tickets nach Status anzeigen
+if ($user_role === 'admin') {
+    // Abfrage: Anzahl der Tickets nach Status
+    $stmt_new = $pdo->prepare("SELECT COUNT(*) AS total FROM tickets WHERE status = 'Neu'");
+    $stmt_new->execute();
+    $new_tickets = $stmt_new->fetchColumn();
 
-// Abfrage: Anzahl der offenen Tickets
-$stmt_open = $pdo->prepare("SELECT COUNT(*) AS open FROM tickets WHERE user_id = ? AND status IN ('Neu', 'In Arbeit', 'Zurückgestellt')");
-$stmt_open->execute([$user_id]);
-$open_tickets = $stmt_open->fetchColumn();
+    $stmt_in_progress = $pdo->prepare("SELECT COUNT(*) AS total FROM tickets WHERE status = 'In Arbeit'");
+    $stmt_in_progress->execute();
+    $in_progress_tickets = $stmt_in_progress->fetchColumn();
 
-// Abfrage: Anzahl der geschlossenen Tickets
-$stmt_closed = $pdo->prepare("SELECT COUNT(*) AS closed FROM tickets WHERE user_id = ? AND status = 'Abgeschlossen'");
-$stmt_closed->execute([$user_id]);
-$closed_tickets = $stmt_closed->fetchColumn();
+    $stmt_on_hold = $pdo->prepare("SELECT COUNT(*) AS total FROM tickets WHERE status = 'Zurückgestellt'");
+    $stmt_on_hold->execute();
+    $on_hold_tickets = $stmt_on_hold->fetchColumn();
+
+    $stmt_closed = $pdo->prepare("SELECT COUNT(*) AS total FROM tickets WHERE status = 'Abgeschlossen'");
+    $stmt_closed->execute();
+    $closed_tickets = $stmt_closed->fetchColumn();
+}
 
 include 'includes/header.php';
 ?>
@@ -27,21 +33,34 @@ include 'includes/header.php';
     <h2>Dashboard</h2>
     <p>Willkommen, Sie sind eingeloggt!</p>
 
-    <!-- Übersicht über die Tickets -->
+    <!-- Übersicht für Admins: Tickets nach Status -->
+    <?php if ($user_role === 'admin'): ?>
     <div class="ticket-summary">
-        <div>
-            <h3>Gesamtanzahl Tickets</h3>
-            <p><?php echo $total_tickets; ?></p>
-        </div>
-        <div>
-            <h3>Offene Tickets</h3>
-            <p><?php echo $open_tickets; ?></p>
-        </div>
-        <div>
-            <h3>Geschlossene Tickets</h3>
-            <p><?php echo $closed_tickets; ?></p>
-        </div>
+        <h3>Ticket Übersicht nach Status</h3>
+        <ul>
+            <li>
+                <a href="ticket_list.php?status=Neu">
+                    Neu: <?php echo $new_tickets; ?> Tickets
+                </a>
+            </li>
+            <li>
+                <a href="ticket_list.php?status=In Arbeit">
+                    In Arbeit: <?php echo $in_progress_tickets; ?> Tickets
+                </a>
+            </li>
+            <li>
+                <a href="ticket_list.php?status=Zurückgestellt">
+                    Zurückgestellt: <?php echo $on_hold_tickets; ?> Tickets
+                </a>
+            </li>
+            <li>
+                <a href="ticket_list.php?status=Abgeschlossen">
+                    Abgeschlossen: <?php echo $closed_tickets; ?> Tickets
+                </a>
+            </li>
+        </ul>
     </div>
+    <?php endif; ?>
 </div>
 
 </body>
