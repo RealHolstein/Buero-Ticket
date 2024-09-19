@@ -21,9 +21,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if ($user) {
             $error = "Der Benutzername ist bereits vergeben!";
         } else {
+            // Standardrolle ist 'user', kann manuell auf 'admin' geändert werden, falls gewünscht.
+            $role = 'user';  // Standardrolle ist 'user'
+
             // Benutzer in die Datenbank einfügen
-            $stmt = $pdo->prepare("INSERT INTO users (username, password) VALUES (?, ?)");
-            if ($stmt->execute([$username, $hashedPassword])) {
+            $stmt = $pdo->prepare("INSERT INTO users (username, password, role) VALUES (?, ?, ?)");
+            if ($stmt->execute([$username, $hashedPassword, $role])) {
                 header("Location: login.php");
                 exit;
             } else {
