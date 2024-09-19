@@ -1,4 +1,7 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 require 'sessions/session.php';
 require 'config/db.php';
 
@@ -6,6 +9,8 @@ require 'config/db.php';
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     die("Ticket-ID fehlt. Bitte wählen Sie ein gültiges Ticket.");
 }
+
+echo "User Role: " . $_SESSION['role'];
 
 // Ticket-ID aus der URL holen
 $ticket_id = (int)$_GET['id']; // Sicherheitshalber casten wir die ID zu einem Integer
@@ -30,8 +35,8 @@ $comment_stmt = $pdo->prepare("SELECT c.comment, u.username, c.created_at FROM t
 $comment_stmt->execute([$ticket_id]);
 $comments = $comment_stmt->fetchAll();
 
-// Benutzer für die Zuweisung abrufen (Admin sieht alle Benutzer)
-$users_stmt = $pdo->prepare("SELECT id, username FROM users WHERE role = 'user'");
+// Benutzer für die Zuweisung und Ersteller-Änderung abrufen (Admin sieht alle Benutzer)
+$users_stmt = $pdo->prepare("SELECT id, username, role FROM users"); // Entferne 'email' falls nicht benötigt
 $users_stmt->execute();
 $users = $users_stmt->fetchAll();
 
@@ -58,6 +63,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_creator'])) {
     // In der Historie protokollieren
     $history_stmt = $pdo->prepare("INSERT INTO ticket_history (ticket_id, changed_by, action) VALUES (?, ?, ?)");
     $history_stmt->execute([$ticket_id, $_SESSION['user_id'], 'Ticket-Ersteller geändert zu Benutzer-ID: ' . $new_creator_id]);
+
+    header("Location: ticket.php?id=$ticket_id");
+    exit;
+}
+
+// Status ändern
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['change_status'])) {
+    $new_status = $_POST['new_status'];
+    $update_stmt = $pdo->prepare("UPDATE tickets SET status = ? WHERE id = ?");
+    $update_stmt->execute([$new_status, $ticket_id]);
+
+    // In der Historie protokollieren
+    $history_stmt = $pdo->prepare("INSERT INTO ticket_history (ticket_id, changed_by, action) VALUES (?, ?, ?)");
+    $history_stmt->execute([$ticket_id, $_SESSION['user_id'], 'Ticket-Status geändert zu: ' . $new_status]);
 
     header("Location: ticket.php?id=$ticket_id");
     exit;
@@ -90,26 +109,45 @@ include 'includes/header.php';
 
     <!-- Ticket zuweisen (nur für Administratoren sichtbar) -->
     <?php if ($_SESSION['role'] === 'admin'): ?>
-        <h3>Ticket einer Person zuweisen</h3>
-        <form action="ticket.php?id=<?php echo $ticket_id; ?>" method="POST">
-            <select name="assigned_user_id">
-                <?php foreach ($users as $user): ?>
-                    <option value="<?php echo $user['id']; ?>"><?php echo htmlspecialchars($user['username']); ?></option>
-                <?php endforeach; ?>
-            </select>
-            <button type="submit" name="assign">Ticket zuweisen</button>
-        </form>
-
-        <h3>Ersteller des Tickets ändern</h3>
-        <form action="ticket.php?id=<?php echo $ticket_id; ?>" method="POST">
-            <select name="new_creator_id">
-                <?php foreach ($users as $user): ?>
-                    <option value="<?php echo $user['id']; ?>"><?php echo htmlspecialchars($user['username']); ?></option>
-                <?php endforeach; ?>
-            </select>
-            <button type="submit" name="change_creator">Ersteller ändern</button>
-        </form>
+    <h3>Ticket einer Person zuweisen</h3>
+    <form action="ticket.php?id=<?php echo $ticket_id; ?>" method="POST">
+        <select name="assigned_user_id" required>
+            <option value="" disabled selected>Bitte wählen Sie einen Benutzer</option>
+            <?php foreach ($users as $user): ?>
+                <option value="<?php echo $user['id']; ?>">
+                    <?php echo htmlspecialchars($user['username']); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <button type="submit" name="assign">Ticket zuweisen</button>
+    </form>
     <?php endif; ?>
+
+    <h3>Ersteller des Tickets ändern</h3>
+    <form action="ticket.php?id=<?php echo $ticket_id; ?>" method="POST">
+        <select name="new_creator_id" required>
+            <option value="" disabled selected>Bitte wählen Sie einen neuen Ersteller</option>
+            <?php foreach ($users as $user): ?>
+                <option value="<?php echo $user['id']; ?>">
+                    <?php echo htmlspecialchars($user['username']) . ' - Rolle: ' . htmlspecialchars($user['role']); ?>
+                </option>
+            <?php endforeach; ?>
+        </select>
+        <button type="submit" name="change_creator">Ersteller ändern</button>
+    </form>
+
+    <!-- Ticket-Status ändern -->
+    <h3>Ticket-Status ändern</h3>
+    <form action="ticket.php?id=<?php echo $ticket_id; ?>" method="POST">
+        <select name="new_status" required>
+            <option value="" disabled selected>Bitte wählen Sie einen neuen Status</option>
+            <option value="Neu" <?php if ($ticket['status'] === 'Neu') echo 'selected'; ?>>Neu</option>
+            <option value="In Arbeit" <?php if ($ticket['status'] === 'In Arbeit') echo 'selected'; ?>>In Arbeit</option>
+            <option value="Zurückgestellt" <?php if ($ticket['status'] === 'Zurückgestellt') echo 'selected'; ?>>Zurückgestellt</option>
+            <option value="Abgeschlossen" <?php if ($ticket['status'] === 'Abgeschlossen') echo 'selected'; ?>>Abgeschlossen</option>
+        </select>
+        <button type="submit" name="change_status">Status ändern</button>
+    </form>
 
     <h3>Historie</h3>
     <ul class="history">
@@ -127,6 +165,7 @@ include 'includes/header.php';
 
     <!-- Kommentarformular (nur für Admins sichtbar) -->
     <?php if ($_SESSION['role'] === 'admin'): ?>
+        <h3>Kommentar hinzufügen</h3>
         <form action="ticket.php?id=<?php echo $ticket_id; ?>" method="POST">
             <textarea name="comment" required></textarea>
             <button type="submit" name="comment">Kommentar hinzufügen</button>
