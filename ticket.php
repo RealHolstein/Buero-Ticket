@@ -2,67 +2,75 @@
 require 'sessions/session.php';
 require 'config/db.php';
 
-// Ticket-ID aus der URL holen
-$ticket_id = $_GET['id'];
+// Benutzer-ID aus der Session holen
+$user_id = $_SESSION['user_id'];
 
-// Ticket-Daten abrufen
-$stmt = $pdo->prepare("SELECT * FROM tickets WHERE id = ? AND user_id = ?");
-$stmt->execute([$ticket_id, $_SESSION['user_id']]);
-$ticket = $stmt->fetch();
+// Tickets nach Status gruppieren (Neu, In Arbeit, Zurückgestellt, Abgeschlossen)
+$stmt_new = $pdo->prepare("SELECT id, title FROM tickets WHERE user_id = ? AND status = 'Neu'");
+$stmt_new->execute([$user_id]);
+$tickets_new = $stmt_new->fetchAll();
 
-// Historie abrufen
-$history_stmt = $pdo->prepare("SELECT * FROM ticket_history WHERE ticket_id = ? ORDER BY created_at ASC");
-$history_stmt->execute([$ticket_id]);
-$history = $history_stmt->fetchAll();
+$stmt_in_progress = $pdo->prepare("SELECT id, title FROM tickets WHERE user_id = ? AND status = 'In Arbeit'");
+$stmt_in_progress->execute([$user_id]);
+$tickets_in_progress = $stmt_in_progress->fetchAll();
 
-// Kommentare abrufen
-$comment_stmt = $pdo->prepare("SELECT c.comment, u.username, c.created_at FROM ticket_comments c JOIN users u ON c.user_id = u.id WHERE c.ticket_id = ? ORDER BY c.created_at ASC");
-$comment_stmt->execute([$ticket_id]);
-$comments = $comment_stmt->fetchAll();
+$stmt_on_hold = $pdo->prepare("SELECT id, title FROM tickets WHERE user_id = ? AND status = 'Zurückgestellt'");
+$stmt_on_hold->execute([$user_id]);
+$tickets_on_hold = $stmt_on_hold->fetchAll();
+
+$stmt_closed = $pdo->prepare("SELECT id, title FROM tickets WHERE user_id = ? AND status = 'Abgeschlossen'");
+$stmt_closed->execute([$user_id]);
+$tickets_closed = $stmt_closed->fetchAll();
+
+include 'includes/header.php';
 ?>
 
-<?php include 'includes/header.php'; ?>
-
 <div class="container">
-    <h2>Ticket Details</h2>
-    <p><strong>Title:</strong> <?php echo $ticket['title']; ?></p>
-    <p><strong>Status:</strong> <?php echo $ticket['status']; ?></p>
+    <h2>Meine Tickets</h2>
 
-    <!-- Formular zum Ändern des Status (nur für Administratoren oder berechtigte Benutzer sichtbar) -->
-    <?php if ($_SESSION['role'] === 'admin'): ?>
-        <h3>Status ändern</h3>
-        <form action="change_status.php" method="POST">
-            <input type="hidden" name="ticket_id" value="<?php echo $ticket_id; ?>">
-            <select name="status">
-                <option value="Neu" <?php if ($ticket['status'] === 'Neu') echo 'selected'; ?>>Neu</option>
-                <option value="In Arbeit" <?php if ($ticket['status'] === 'In Arbeit') echo 'selected'; ?>>In Arbeit</option>
-                <option value="Zurückgestellt" <?php if ($ticket['status'] === 'Zurückgestellt') echo 'selected'; ?>>Zurückgestellt</option>
-                <option value="Abgeschlossen" <?php if ($ticket['status'] === 'Abgeschlossen') echo 'selected'; ?>>Abgeschlossen</option>
-            </select>
-            <button type="submit">Status ändern</button>
-        </form>
-    <?php endif; ?>
-
-    <h3>Historie</h3>
-    <ul class="history">
-        <?php foreach ($history as $entry): ?>
-            <li><strong><?php echo $entry['created_at']; ?>:</strong> <?php echo $entry['action']; ?> von Benutzer-ID <?php echo $entry['changed_by']; ?></li>
+    <!-- Kategorie: Neue Tickets -->
+    <h3>Neu</h3>
+    <ul class="ticket-list">
+        <?php foreach ($tickets_new as $ticket): ?>
+            <li><a href="ticket.php?id=<?php echo $ticket['id']; ?>"><?php echo $ticket['title']; ?></a></li>
         <?php endforeach; ?>
+        <?php if (empty($tickets_new)): ?>
+            <p>Keine neuen Tickets vorhanden.</p>
+        <?php endif; ?>
     </ul>
 
-    <h3>Kommentare</h3>
-    <ul class="comments">
-        <?php foreach ($comments as $comment): ?>
-            <li><strong><?php echo $comment['username']; ?>:</strong> <?php echo $comment['comment']; ?> (<?php echo $comment['created_at']; ?>)</li>
+    <!-- Kategorie: In Arbeit -->
+    <h3>In Arbeit</h3>
+    <ul class="ticket-list">
+        <?php foreach ($tickets_in_progress as $ticket): ?>
+            <li><a href="ticket.php?id=<?php echo $ticket['id']; ?>"><?php echo $ticket['title']; ?></a></li>
         <?php endforeach; ?>
+        <?php if (empty($tickets_in_progress)): ?>
+            <p>Keine Tickets in Arbeit.</p>
+        <?php endif; ?>
     </ul>
 
-    <!-- Kommentarformular -->
-    <form action="add_comment.php" method="POST">
-        <input type="hidden" name="ticket_id" value="<?php echo $ticket_id; ?>">
-        <textarea name="comment" required></textarea>
-        <button class="comment-submit" type="submit">Kommentar hinzufügen</button>
-    </form>
+    <!-- Kategorie: Zurückgestellt -->
+    <h3>Zurückgestellt</h3>
+    <ul class="ticket-list">
+        <?php foreach ($tickets_on_hold as $ticket): ?>
+            <li><a href="ticket.php?id=<?php echo $ticket['id']; ?>"><?php echo $ticket['title']; ?></a></li>
+        <?php endforeach; ?>
+        <?php if (empty($tickets_on_hold)): ?>
+            <p>Keine zurückgestellten Tickets vorhanden.</p>
+        <?php endif; ?>
+    </ul>
+
+    <!-- Kategorie: Abgeschlossen -->
+    <h3>Abgeschlossen</h3>
+    <ul class="ticket-list">
+        <?php foreach ($tickets_closed as $ticket): ?>
+            <li><a href="ticket.php?id=<?php echo $ticket['id']; ?>"><?php echo $ticket['title']; ?></a></li>
+        <?php endforeach; ?>
+        <?php if (empty($tickets_closed)): ?>
+            <p>Keine abgeschlossenen Tickets vorhanden.</p>
+        <?php endif; ?>
+    </ul>
 </div>
 
 </body>

@@ -211,3 +211,33 @@ table th {
 table tr:hover {
     background-color: #f9f9f9;
 }
+
+/* Ticket-Liste */
+.ticket-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.ticket-list li {
+    background-color: #f9f9f9;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+.ticket-list li:hover {
+    background-color: #eef6ff;
+}
+
+.ticket-list a {
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+}
+
+.ticket-list a:hover {
+    color: #4a90e2;
+}
