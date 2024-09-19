@@ -18,9 +18,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 }
 ?>
 
-echo "User Role: " . $_SESSION['role'];
-
-<!-- Einbindung des CSS für das moderne Design -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,11 +28,8 @@ echo "User Role: " . $_SESSION['role'];
 </head>
 <body>
 
-<header>
-    <h1>Ticketsystem</h1>
-    <a href="index.php">Home</a>
-    <a href="logout.php">Logout</a>
-</header>
+<!-- Einbinden des Headers -->
+<?php include 'includes/header.php'; ?>
 
 <div class="container">
     <h2>Ticket erstellen</h2>
