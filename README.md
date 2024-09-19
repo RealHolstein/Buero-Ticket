@@ -17,3 +17,5 @@ Ein einfaches webbasiertes Ticketsystem mit PHP und MariaDB, das es Benutzern er
 
    ```bash
    git clone https://github.com/RealHolstein/ticketsystem.git
+
+![image](https://github.com/user-attachments/assets/f07958fa-f7a6-4e9c-a53e-c43f62ea1ab1)
