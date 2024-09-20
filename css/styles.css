@@ -4,26 +4,74 @@ body {
     margin: 0;
     padding: 0;
     background-color: #f4f4f4;
+    display: flex;
+    flex-direction: row; /* Flexbox für Sidebar und Content */
 }
 
-/* Header-Stile */
-header {
+/* Sidebar-Stile */
+.sidebar {
+    width: 250px;
     background-color: #333;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     color: white;
-    padding: 15px;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    transition: width 0.3s ease; /* Animation für Sidebar */
 }
 
-header a {
-    color: white;
-    text-decoration: none;
-    padding: 0 15px;
+.sidebar .profile-section {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.sidebar .profile-picture img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    transition: transform 0.3s ease; /* Bildanimation */
+}
+
+.sidebar .profile-picture img:hover {
+    transform: scale(1.05);
+}
+
+.sidebar .username {
+    color: #ddd;
+    margin-top: 10px;
     font-weight: bold;
 }
 
-header a:hover {
-    color: #ddd;
+.sidebar-menu ul {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+}
+
+.sidebar-menu ul li {
+    margin: 20px 0;
+}
+
+.sidebar-menu ul li a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px;
+    display: block;
+    padding: 10px 15px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.sidebar-menu ul li a:hover {
+    background-color: #575757;
+    color: #ffffff;
 }
 
 /* Container für die Seiten */
@@ -37,9 +85,11 @@ header a:hover {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     margin-top: 40px;
     overflow: visible; /* Stellt sicher, dass TinyMCE und andere Inhalte richtig angezeigt werden */
+    transition: margin-left 0.3s ease; /* Animation beim Öffnen der Sidebar */
+    margin-left: 250px;
 }
 
-/* Formular-Stile */
+/* Formularelemente */
 form {
     max-width: 100%;
     margin: 20px 0;
@@ -64,10 +114,12 @@ input[type="text"], input[type="password"], textarea, select {
     border-radius: 4px;
     box-sizing: border-box;
     font-size: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 input[type="text"]:focus, input[type="password"]:focus, textarea:focus, select:focus {
     border-color: #4a90e2;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
     outline: none;
 }
 
@@ -90,31 +142,6 @@ button {
 
 button:hover {
     background-color: #4cae4c;
-}
-
-/* Spezifische Button-Stile für andere Aktionen */
-button.delete {
-    background-color: #e74c3c;
-}
-
-button.delete:hover {
-    background-color: #c0392b;
-}
-
-/* Fehlernachricht-Stile */
-.error-message {
-    color: red;
-    text-align: center;
-    margin-top: 20px;
-    font-weight: bold;
-}
-
-/* Erfolgsmeldung-Stile */
-.success-message {
-    color: green;
-    text-align: center;
-    margin-top: 20px;
-    font-weight: bold;
 }
 
 /* Ticket-Übersicht */
@@ -156,39 +183,15 @@ button.delete:hover {
     border-radius: 5px;
     border-left: 4px solid #4a90e2;
     color: #555;
+    transition: background-color 0.3s ease;
+}
+
+.history li:hover, .comments li:hover {
+    background-color: #eef6ff;
 }
 
 .history li strong, .comments li strong {
     color: #333;
-}
-
-/* Kommentarformular */
-textarea.comment-box {
-    width: 100%;
-    padding: 12px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    min-height: 100px;
-    font-size: 16px;
-}
-
-textarea.comment-box:focus {
-    border-color: #4a90e2;
-}
-
-button.comment-submit {
-    padding: 12px;
-    width: 100%;
-    background-color: #4a90e2;
-    border: none;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-button.comment-submit:hover {
-    background-color: #357abd;
 }
 
 /* Tabellen-Stile */
@@ -213,66 +216,6 @@ table tr:hover {
     background-color: #f9f9f9;
 }
 
-/* Ticket-Liste */
-.ticket-list {
-    list-style-type: none;
-    padding: 0;
-    margin: 20px 0;
-}
-
-.ticket-list li {
-    background-color: #f9f9f9;
-    margin-bottom: 10px;
-    padding: 15px;
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    transition: background-color 0.3s ease;
-}
-
-.ticket-list li:hover {
-    background-color: #eef6ff;
-}
-
-.ticket-list a {
-    text-decoration: none;
-    color: #333;
-    font-weight: bold;
-}
-
-.ticket-list a:hover {
-    color: #4a90e2;
-}
-
-/* Hervorhebung für den neuesten Eintrag */
-.latest-entry {
-    font-weight: bold;
-    background-color: #f0f8ff; /* Hellblauer Hintergrund für Hervorhebung */
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
-
-/* Ältere Einträge weniger stark hervorheben */
-.older-entry {
-    font-weight: normal;
-    color: #777;
-    background-color: #f9f9f9; /* Etwas hellerer Hintergrund für ältere Einträge */
-    padding: 8px;
-    border-radius: 5px;
-    margin-bottom: 10px;
-}
-
-/* Spezielle Formatierung für Admin-Einträge */
-.admin-entry {
-    color: #d9534f; /* Rote Schrift für Admin-Einträge */
-    font-weight: bold;
-}
-
-/* Spezielle Formatierung für User-Einträge */
-.user-entry {
-    color: #5bc0de; /* Blaue Schrift für User-Einträge */
-}
-
 /* Modal Styles */
 .modal {
     display: none; /* Standardmäßig versteckt */
@@ -292,6 +235,8 @@ table tr:hover {
     padding: 20px;
     border: 1px solid #888;
     width: 80%;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
 }
 
 .close {
@@ -307,58 +252,39 @@ table tr:hover {
     cursor: pointer;
 }
 
-/* Scrollable containers for history and comments */
-.scrollable-container {
-    max-height: 180px;
-    overflow-y: auto;
+/* Kommentarformular */
+textarea.comment-box {
+    width: 100%;
+    padding: 12px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    min-height: 100px;
+    font-size: 16px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-/* Einheitliches Button-Styling */
-button {
-    background-color: #4CAF50; /* Einheitliche grüne Farbe */
-    color: white;
+textarea.comment-box:focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 5px rgba(74, 144, 226, 0.5);
+}
+
+/* Kommentarfeld-Button */
+button.comment-submit {
+    padding: 12px;
+    width: 100%;
+    background-color: #4a90e2;
     border: none;
-    padding: 10px 20px;
-    cursor: pointer;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    border-radius: 5px; /* Abgerundete Ecken für ein moderneres Design */
-    font-size: 14px; /* Angemessene Schriftgröße */
-    transition: background-color 0.3s ease; /* Weicher Übergang beim Hover */
-}
-
-button:hover {
-    background-color: #45a049; /* Etwas dunklerer Grünton beim Hover */
-}
-
-button:focus {
-    outline: none; /* Entfernt den Fokusrahmen */
-}
-
-/* Dropdown sections for assigning and changing the creator */
-#assign-section, #creator-section {
-    margin-top: 10px;
-    display: none;
-    background-color: #f9f9f9;
-    padding: 10px;
-    border-radius: 5px;
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
-}
-
-/* Button for dropdown toggle */
-button.toggle-section {
-    background-color: #4CAF50;
-    padding: 8px 15px;
-    font-size: 14px;
     color: white;
     border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
 }
 
-button.toggle-section:hover {
-    background-color: #45a049;
+button.comment-submit:hover {
+    background-color: #357abd;
 }
 
-/* Spezifische TinyMCE-Stile */
+/* TinyMCE-Stile */
 .tox {
     width: 100%;
     z-index: 9999; /* Sicherstellen, dass die Menüs oben sind */
@@ -368,9 +294,33 @@ button.toggle-section:hover {
     width: 100%;
 }
 
-.comment-textarea-main,
-.comment-textarea-popup {
-    width: 100%;
-    height: 150px; /* Höhe für den Editor */
-    border-radius: 5px;
+/* Responsive Design Anpassungen */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+
+    .sidebar .profile-picture img {
+        width: 80px;
+        height: 80px;
+    }
+
+    .content {
+        margin-left: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar {
+        width: 150px;
+    }
+
+    .sidebar .profile-picture img {
+        width: 60px;
+        height: 60px;
+    }
+
+    .content {
+        margin-left: 150px;
+    }
 }

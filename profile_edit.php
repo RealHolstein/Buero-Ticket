@@ -6,7 +6,7 @@ require 'config/db.php';
 $user_id = $_SESSION['user_id'];
 
 // Abfrage: Benutzerinformationen
-$stmt = $pdo->prepare("SELECT username, email, phone FROM users WHERE id = ?");
+$stmt = $pdo->prepare("SELECT username, email, phone, profile_picture FROM users WHERE id = ?");
 $stmt->execute([$user_id]);
 $user = $stmt->fetch();
 
@@ -21,6 +21,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $current_password = $_POST['current_password'];
     $new_password = $_POST['new_password'];
     $new_password_confirm = $_POST['new_password_confirm'];
+    
+    // Bild-Upload verarbeiten
+    if (isset($_FILES['profile_picture']) && $_FILES['profile_picture']['error'] == 0) {
+        $allowed_types = ['image/jpeg', 'image/png', 'image/gif'];
+        $file_type = $_FILES['profile_picture']['type'];
+        if (in_array($file_type, $allowed_types)) {
+            $file_name = time() . '_' . $_FILES['profile_picture']['name'];
+            $file_path = 'uploads/' . $file_name;
+            
+            // Datei verschieben
+            if (move_uploaded_file($_FILES['profile_picture']['tmp_name'], $file_path)) {
+                // Bildpfad in der Datenbank aktualisieren
+                $stmt = $pdo->prepare("UPDATE users SET profile_picture = ? WHERE id = ?");
+                $stmt->execute([$file_name, $user_id]);
+                $success = 'Profilbild erfolgreich hochgeladen.';
+            } else {
+                $error = 'Fehler beim Hochladen des Bildes.';
+            }
+        } else {
+            $error = 'Nur JPEG, PNG und GIF Dateien sind erlaubt.';
+        }
+    }
 
     // Überprüfen, ob das aktuelle Passwort eingegeben wurde, aber nur wenn das Passwort geändert werden soll
     if (!empty($new_password) || !empty($new_password_confirm)) {
@@ -37,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
             $stmt = $pdo->prepare("UPDATE users SET password = ? WHERE id = ?");
             $stmt->execute([$hashed_password, $user_id]);
-            $success = 'Passwort erfolgreich geändert.';
+            $success = $success ? $success . ' Passwort erfolgreich geändert.' : 'Passwort erfolgreich geändert.';
         }
     }
 
@@ -63,7 +85,16 @@ include 'includes/header.php';
         <p style="color: green;"><?php echo $success; ?></p>
     <?php endif; ?>
 
-    <form action="profile_edit.php" method="POST">
+    <!-- Profilbild anzeigen -->
+    <div class="profile-picture">
+        <?php if (!empty($user['profile_picture'])): ?>
+            <img src="uploads/<?php echo htmlspecialchars($user['profile_picture']); ?>" alt="Profilbild" style="max-width: 150px; max-height: 150px; border-radius: 50%;">
+        <?php else: ?>
+            <img src="uploads/default.png" alt="Standard-Profilbild" style="max-width: 150px; max-height: 150px; border-radius: 50%;">
+        <?php endif; ?>
+    </div>
+
+    <form action="profile_edit.php" method="POST" enctype="multipart/form-data">
         <label for="username">Benutzername:</label>
         <input type="text" id="username" name="username" value="<?php echo htmlspecialchars($user['username']); ?>" required>
 
@@ -72,6 +103,10 @@ include 'includes/header.php';
 
         <label for="phone">Telefonnummer:</label>
         <input type="text" id="phone" name="phone" value="<?php echo htmlspecialchars($user['phone']); ?>">
+
+        <!-- Bild-Upload -->
+        <label for="profile_picture">Profilbild ändern:</label>
+        <input type="file" id="profile_picture" name="profile_picture" accept="image/*">
 
         <label for="current_password">Aktuelles Passwort (nur für Passwortänderung erforderlich):</label>
         <input type="password" id="current_password" name="current_password">

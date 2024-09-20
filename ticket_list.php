@@ -2,6 +2,22 @@
 require 'sessions/session.php';
 require 'config/db.php';
 
+// Benutzerinformationen inkl. Profilbild und Username erneut abrufen
+$user_id = $_SESSION['user_id'];
+$stmt = $pdo->prepare("SELECT username, profile_picture FROM users WHERE id = ?");
+$stmt->execute([$user_id]);
+$user = $stmt->fetch();
+
+// Profilbild in der Session speichern, falls noch nicht vorhanden
+if (!isset($_SESSION['profile_picture'])) {
+    $_SESSION['profile_picture'] = !empty($user['profile_picture']) ? 'uploads/profile_images/' . $user['profile_picture'] : 'uploads/profile_images/default.jpg';
+}
+if (!isset($_SESSION['username'])) {
+    $_SESSION['username'] = $user['username'];
+}
+
+include 'includes/header.php';
+
 // Überprüfen, ob der Benutzer ein Admin ist
 if ($_SESSION['role'] !== 'admin') {
     die("Zugriff verweigert.");
@@ -27,7 +43,6 @@ $stmt = $pdo->prepare("
 $stmt->execute([$status]);
 $tickets = $stmt->fetchAll();
 
-include 'includes/header.php';
 ?>
 
 <div class="container">

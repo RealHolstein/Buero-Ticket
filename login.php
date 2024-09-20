@@ -13,11 +13,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Überprüfen, ob Benutzer gefunden wurde und Passwort korrekt ist
     if ($user && password_verify($password, $user['password'])) {
-        // Benutzer-ID und Benutzerrolle in der Session speichern
+        // Benutzer-ID, Benutzername und Benutzerrolle in der Session speichern
         $_SESSION['user_id'] = $user['id'];
-        $_SESSION['role'] = $user['role']; // Die Rolle des Benutzers in die Session setzen
+        $_SESSION['username'] = $user['username']; // Benutzername in die Session setzen
+        $_SESSION['role'] = $user['role']; // Benutzerrolle in die Session setzen
 
-        // Weiterleiten zur Startseite
+        // Weiterleiten zur Startseite (Dashboard)
         header("Location: index.php");
         exit;
     } else {
@@ -29,21 +30,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <?php include 'includes/header.php'; ?>
 
-<h2>Login</h2>
-<form action="login.php" method="POST">
-    <label for="username">Benutzername:</label>
-    <input type="text" id="username" name="username" required>
-    
-    <label for="password">Passwort:</label>
-    <input type="password" id="password" name="password" required>
-    
-    <button type="submit">Login</button>
-</form>
+<div class="container">
+    <h2>Login</h2>
+    <form action="login.php" method="POST">
+        <label for="username">Benutzername:</label>
+        <input type="text" id="username" name="username" required>
+        
+        <label for="password">Passwort:</label>
+        <input type="password" id="password" name="password" required>
+        
+        <button type="submit">Login</button>
+    </form>
 
-<p>Noch kein Konto? <a href="register.php">Hier registrieren</a></p>
+    <p>Noch kein Konto? <a href="register.php">Hier registrieren</a></p>
 
-<?php if (isset($error)): ?>
-    <p><?php echo $error; ?></p>
-<?php endif; ?>
+    <!-- Anzeige der Fehlermeldung bei falschen Login-Daten -->
+    <?php if (isset($error)): ?>
+        <p style="color:red;"><?php echo $error; ?></p>
+    <?php endif; ?>
+</div>
+
 </body>
 </html>
