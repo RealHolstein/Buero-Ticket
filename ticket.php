@@ -177,18 +177,20 @@ $users = $users_stmt->fetchAll();
                     <?php echo strlen($comment['comment']) > 100 ? substr(htmlspecialchars($comment['comment']), 0, 100) . '...' : htmlspecialchars($comment['comment']); ?>
                 </span>
                 <?php if (strlen($comment['comment']) > 100): ?>
-                    <a href="#" class="expand-comment" data-comment="<?php echo htmlspecialchars($comment['comment']); ?>">Mehr anzeigen</a>
+                    <a href="#" class="expand-comment" data-comment="<?php echo htmlspecialchars($comment['comment']); ?>" data-username="<?php echo htmlspecialchars($comment['username']); ?>" data-created_at="<?php echo date('d.m.Y H:i', strtotime($comment['created_at'])); ?> Uhr">Mehr anzeigen</a>
                 <?php endif; ?>
             </li>
         <?php endforeach; ?>
     </ul>
 
     <!-- Kommentarformular (für Benutzer und Admins) -->
-    <h3>Kommentar hinzufügen</h3>
-    <form action="ticket.php?id=<?php echo $ticket_id; ?>" method="POST">
-        <textarea name="comment" class="comment-textarea-main" required></textarea>
-        <button type="submit" name="comment_submit">Kommentar hinzufügen</button>
-    </form>
+    <div class="comment-section">
+        <h3>Kommentar hinzufügen</h3>
+        <form action="ticket.php?id=<?php echo $ticket_id; ?>" method="POST">
+            <textarea name="comment" class="comment-textarea-main" required></textarea>
+            <button type="submit" name="comment_submit">Kommentar hinzufügen</button>
+        </form>
+    </div>
 </div>
 
 <!-- Modal Popup für Kommentare -->
@@ -197,6 +199,8 @@ $users = $users_stmt->fetchAll();
         <span class="close">&times;</span>
         <h3>Kommentar</h3>
         <p id="fullComment"></p>
+        <p><strong>Verfasst von:</strong> <span id="commentUsername"></span></p>
+        <p><strong>Verfasst am:</strong> <span id="commentCreatedAt"></span></p>
         <h3>Antwort hinzufügen</h3>
         <form action="ticket.php?id=<?php echo $ticket_id; ?>" method="POST">
             <textarea name="comment_popup" class="comment-textarea-popup" required></textarea>
@@ -206,27 +210,48 @@ $users = $users_stmt->fetchAll();
 </div>
 
 <!-- Einbinden von TinyMCE -->
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.tiny.cloud/1/rmpj7n50t5bzz1l7i61fxszuio7nt2fb22bfowjl844swyg9/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
 <script>
     tinymce.init({
-        selector: '.comment-textarea-main, .comment-textarea-popup',  // Wendet TinyMCE auf beide Textareas an
-        height: 150,  // Höhe des Texteditors
-        menubar: true,  // Kein Menü
-        plugins: 'lists link',  // Aktiviert grundlegende Plugins
-        toolbar: 'undo redo | bold italic underline | bullist numlist | link',  // Toolbar mit Formatierungsoptionen
-        branding: false  // Entfernt das Branding von TinyMCE
+        selector: '.comment-textarea-main, .comment-textarea-popup',
+        height: 300,  // Höhere Größe für den Editor
+        menubar: true,  // Menubar explizit einschalten
+        plugins: 'advlist autolink lists link image charmap print preview anchor table',  // Plugins hinzufügen
+        toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',  // Definierte Toolbar
+        menu: {  // Menü explizit definieren
+            file: { title: 'File', items: 'newdocument restoredraft | preview | print' },
+            edit: { title: 'Edit', items: 'undo redo | cut copy paste pastetext | selectall' },
+            view: { title: 'View', items: 'code | visualaid visualchars visualblocks | spellchecker | preview fullscreen' },
+            insert: { title: 'Insert', items: 'link image media | template codesample inserttable | hr | anchor' },
+            format: { title: 'Format', items: 'bold italic underline strikethrough superscript subscript | formats blockformats | removeformat' },
+            tools: { title: 'Tools', items: 'spellchecker code wordcount' },
+            table: { title: 'Table', items: 'inserttable | cell row column' },
+        },
+        branding: false,  // Entfernt TinyMCE Branding
+        content_css: '//www.tiny.cloud/css/codepen.min.css',  // Optional: zusätzliche CSS-Stile
+        setup: function (editor) {
+            editor.on('init', function () {
+                editor.getContainer().style.transition = "all 0.2s ease";
+            });
+        }
     });
 
     // Modal Popup öffnen
     var modal = document.getElementById("commentModal");
     var span = document.getElementsByClassName("close")[0];
 
-    // Wenn auf "Mehr anzeigen" geklickt wird, öffnet das Modal und zeigt den vollständigen Kommentar
+    // Wenn auf "Mehr anzeigen" geklickt wird, öffnet das Modal und zeigt den vollständigen Kommentar, den Benutzer und das Datum an
     document.querySelectorAll('.expand-comment').forEach(function(link) {
         link.addEventListener('click', function(e) {
             e.preventDefault();
             var fullComment = this.getAttribute('data-comment');
+            var username = this.getAttribute('data-username');
+            var createdAt = this.getAttribute('data-created_at');
+
             document.getElementById("fullComment").innerText = fullComment;
+            document.getElementById("commentUsername").innerText = username;
+            document.getElementById("commentCreatedAt").innerText = createdAt;
+
             modal.style.display = "block";
         });
     });

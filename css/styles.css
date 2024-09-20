@@ -29,13 +29,14 @@ header a:hover {
 /* Container für die Seiten */
 .container {
     width: 90%;
-    max-width: 800px;
+    max-width: 1200px; /* Erhöhte maximale Breite */
     margin: 0 auto;
     padding: 20px;
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     margin-top: 40px;
+    overflow: visible; /* Stellt sicher, dass TinyMCE und andere Inhalte richtig angezeigt werden */
 }
 
 /* Formular-Stile */
@@ -241,6 +242,7 @@ table tr:hover {
 .ticket-list a:hover {
     color: #4a90e2;
 }
+
 /* Hervorhebung für den neuesten Eintrag */
 .latest-entry {
     font-weight: bold;
@@ -269,26 +271,6 @@ table tr:hover {
 /* Spezielle Formatierung für User-Einträge */
 .user-entry {
     color: #5bc0de; /* Blaue Schrift für User-Einträge */
-}
-
-/* Allgemeine Styles für das Ticket-Layout */
-.container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-h2, h3 {
-    color: #333;
-}
-
-ul.history, ul.comments {
-    list-style-type: none;
-    padding: 0;
-}
-
-ul.history li, ul.comments li {
-    margin-bottom: 10px;
 }
 
 /* Modal Styles */
@@ -374,4 +356,21 @@ button.toggle-section {
 
 button.toggle-section:hover {
     background-color: #45a049;
+}
+
+/* Spezifische TinyMCE-Stile */
+.tox {
+    width: 100%;
+    z-index: 9999; /* Sicherstellen, dass die Menüs oben sind */
+}
+
+.tox-tinymce {
+    width: 100%;
+}
+
+.comment-textarea-main,
+.comment-textarea-popup {
+    width: 100%;
+    height: 150px; /* Höhe für den Editor */
+    border-radius: 5px;
 }
