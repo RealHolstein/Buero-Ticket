@@ -241,3 +241,137 @@ table tr:hover {
 .ticket-list a:hover {
     color: #4a90e2;
 }
+/* Hervorhebung für den neuesten Eintrag */
+.latest-entry {
+    font-weight: bold;
+    background-color: #f0f8ff; /* Hellblauer Hintergrund für Hervorhebung */
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+/* Ältere Einträge weniger stark hervorheben */
+.older-entry {
+    font-weight: normal;
+    color: #777;
+    background-color: #f9f9f9; /* Etwas hellerer Hintergrund für ältere Einträge */
+    padding: 8px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+/* Spezielle Formatierung für Admin-Einträge */
+.admin-entry {
+    color: #d9534f; /* Rote Schrift für Admin-Einträge */
+    font-weight: bold;
+}
+
+/* Spezielle Formatierung für User-Einträge */
+.user-entry {
+    color: #5bc0de; /* Blaue Schrift für User-Einträge */
+}
+
+/* Allgemeine Styles für das Ticket-Layout */
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+h2, h3 {
+    color: #333;
+}
+
+ul.history, ul.comments {
+    list-style-type: none;
+    padding: 0;
+}
+
+ul.history li, ul.comments li {
+    margin-bottom: 10px;
+}
+
+/* Modal Styles */
+.modal {
+    display: none; /* Standardmäßig versteckt */
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4); /* Black with opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover, .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Scrollable containers for history and comments */
+.scrollable-container {
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+/* Einheitliches Button-Styling */
+button {
+    background-color: #4CAF50; /* Einheitliche grüne Farbe */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px; /* Abgerundete Ecken für ein moderneres Design */
+    font-size: 14px; /* Angemessene Schriftgröße */
+    transition: background-color 0.3s ease; /* Weicher Übergang beim Hover */
+}
+
+button:hover {
+    background-color: #45a049; /* Etwas dunklerer Grünton beim Hover */
+}
+
+button:focus {
+    outline: none; /* Entfernt den Fokusrahmen */
+}
+
+/* Dropdown sections for assigning and changing the creator */
+#assign-section, #creator-section {
+    margin-top: 10px;
+    display: none;
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Button for dropdown toggle */
+button.toggle-section {
+    background-color: #4CAF50;
+    padding: 8px 15px;
+    font-size: 14px;
+    color: white;
+    border-radius: 4px;
+}
+
+button.toggle-section:hover {
+    background-color: #45a049;
+}

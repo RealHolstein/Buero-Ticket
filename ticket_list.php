@@ -14,8 +14,16 @@ if (!isset($_GET['status'])) {
 
 $status = $_GET['status'];
 
-// Abfrage: Tickets nach Status
-$stmt = $pdo->prepare("SELECT * FROM tickets WHERE status = ?");
+// Abfrage: Tickets nach Status, inklusive Namen der Ersteller und zugewiesenen Benutzer
+$stmt = $pdo->prepare("
+    SELECT tickets.id, tickets.title, tickets.status, 
+           creator.username AS creator_name, 
+           assignee.username AS assigned_to_name 
+    FROM tickets 
+    JOIN users AS creator ON tickets.user_id = creator.id 
+    LEFT JOIN users AS assignee ON tickets.assigned_to = assignee.id 
+    WHERE tickets.status = ?
+");
 $stmt->execute([$status]);
 $tickets = $stmt->fetchAll();
 
@@ -43,8 +51,8 @@ include 'includes/header.php';
                 <td><?php echo htmlspecialchars($ticket['id']); ?></td>
                 <td><?php echo htmlspecialchars($ticket['title']); ?></td>
                 <td><?php echo htmlspecialchars($ticket['status']); ?></td>
-                <td><?php echo htmlspecialchars($ticket['user_id']); ?></td>
-                <td><?php echo htmlspecialchars($ticket['assigned_to']); ?></td>
+                <td><?php echo htmlspecialchars($ticket['creator_name']); ?></td>
+                <td><?php echo htmlspecialchars($ticket['assigned_to_name']) ?: 'Nicht zugewiesen'; ?></td> <!-- Überprüfen, ob zugewiesen -->
                 <td>
                     <a href="ticket.php?id=<?php echo $ticket['id']; ?>">Ansehen</a>
                 </td>
